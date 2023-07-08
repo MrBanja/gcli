@@ -3,6 +3,8 @@
 
 **gcli** is a command-line interface (CLI) tool for using ChatGPT. It allows you to interact with the ChatGPT language model directly from your terminal. The current version supports GPT-4, with plans to add support for new versions in the future. The project is written in pure Go.
 
+<img alt="Welcome to VHS" src="https://github.com/MrBanja/gcli/blob/main/demo.gif?raw=true" width="600" />
+
 ## Table of Contents
 - [gcli](#gcli)
     - [Building from Source](#building-from-source)
