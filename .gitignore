@@ -20,6 +20,7 @@ gen
 *.dll
 *.so
 *.dylib
+gcli-*
 
 # Test binary, built with `go test -c`
 *.test
