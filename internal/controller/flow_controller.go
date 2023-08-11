@@ -3,6 +3,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"gcli/internal/history"
 	"gcli/internal/util"
 	"github.com/MrBanja/openaiAPI"
@@ -10,33 +12,31 @@ import (
 	"github.com/spf13/viper"
 )
 
-type FlowController struct {
-	openai  *openaiAPI.OpenAI
-	history *history.History
-}
+var openai *openaiAPI.OpenAI
 
-func New(openai *openaiAPI.OpenAI, history *history.History) *FlowController {
-	return &FlowController{
-		openai:  openai,
-		history: history,
+func InitFlowController() error {
+	if openai != nil {
+		return fmt.Errorf("flow controller already initialized")
 	}
+	openai = openaiAPI.New(viper.GetString("openai.token"), openaiAPI.Model4, 60*time.Second)
+	return nil
 }
 
-func (f *FlowController) Stream(prompt string) error {
+func Stream(prompt string) error {
 	convID := viper.GetString("current_conversation_id")
-	messages, err := f.history.Get(convID)
+	messages, err := history.Get(convID)
 	if err != nil {
 		return err
 	}
 
-	resp := f.openai.SendWithStream(context.Background(), prompt, messages)
+	resp := openai.SendWithStream(context.Background(), prompt, messages)
 	messageContent := ""
 
 L:
 	for {
 		select {
 		case err := <-resp.Error():
-			util.HandleError(err, "OpenAI response error")
+			return fmt.Errorf("OpenAI response error %w", err)
 		case msg, ok := <-resp.Data():
 			if !ok {
 				break L
@@ -48,15 +48,20 @@ L:
 
 	screen.Clear()
 	screen.MoveTopLeft()
-	util.PrintOrExit("# RESPONSE")
-	util.PrintOrExit(messageContent)
+
+	if err := util.GPrint("# RESPONSE"); err != nil {
+		return err
+	}
+	if err := util.GPrint(messageContent); err != nil {
+		return err
+	}
 
 	messages = append(
 		messages,
 		openaiAPI.Message{Role: openaiAPI.RoleUser, Content: prompt},
 		openaiAPI.Message{Role: openaiAPI.RoleAssistant, Content: messageContent},
 	)
-	if err := f.history.Set(convID, messages); err != nil {
+	if err := history.Set(convID, messages); err != nil {
 		return nil
 	}
 	return nil

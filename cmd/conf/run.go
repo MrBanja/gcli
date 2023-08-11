@@ -7,23 +7,24 @@ import (
 )
 
 var (
-	Cmd = &cobra.Command{
+	cmd = &cobra.Command{
 		Use:   "config",
 		Short: "Set configuration",
 		Args:  cobra.NoArgs,
 	}
-	CmdSet = &cobra.Command{
+	cmdSet = &cobra.Command{
 		Use:   "set [key] [value]",
 		Short: "Set config",
 		Args:  cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			viper.Set(args[0], args[1])
 			fmt.Printf("%s is set\n", args[0])
-			viper.WriteConfig()
+			return viper.WriteConfig()
 		},
 	}
 )
 
-func init() {
-	Cmd.AddCommand(CmdSet)
+func Cmd() *cobra.Command {
+	cmd.AddCommand(cmdSet)
+	return cmd
 }
