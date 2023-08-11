@@ -95,6 +95,10 @@ Command for working with conversations. Available sub-commands:
 Set configuration options. Available sub-commands:
 
 - `gcli config set`: Set configuration values.
+- 
+### gcli version
+
+Display current version.
 
 ### gcli conv history [command]
 
